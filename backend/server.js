@@ -10,11 +10,11 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const userRouter = require('./routes/userRoutes');
-//const appointmentRouter = require('./routes/appointment');
+const appointmentRouter = require('./routes/appointmentsRoutes');
 const timeslotRouter = require('./routes/timeslotRoutes');
 
 app.use('/user', userRouter);
-//app.use('/appointment', appointmentRouter);
+app.use('/appointment', appointmentRouter);
 app.use('/timeslot', timeslotRouter);
 
 
