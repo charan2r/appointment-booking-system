@@ -18,9 +18,17 @@ router.get('/view', async (req, res) => {
 
 // Book an appointment
 router.post('/book', async (req, res) => {
-    const { user_id, date, time_slot } = req.body;
+    const { name, date, time_slot } = req.body;
 
     try {
+        // Fetch user_id based on name
+        const user = await pool.query('SELECT id FROM users WHERE name = $1', [name]);
+
+        if (user.rows.length === 0) {
+            return res.status(400).json({ error: 'User not found!' });
+        }
+        const user_id = user.rows[0].id;
+
         // Check if the slot is already booked
         const existing = await pool.query(
             'SELECT * FROM appointments WHERE date = $1 AND time_slot = $2',
@@ -30,20 +38,20 @@ router.post('/book', async (req, res) => {
             return res.status(400).json({ error: 'Time slot already booked!' });
         }
 
-        // Add appointment
+        // Insert appointment with user_id
         const result = await pool.query(
-            'INSERT INTO appointments (user_id, date, time_slot) VALUES ($1, $2, $3) RETURNING *',
-            [user_id, date, time_slot]
+            'INSERT INTO appointments (user_id, name, date, time_slot) VALUES ($1, $2, $3, $4) RETURNING *',
+            [user_id, name, date, time_slot]
         );
+        
 
         res.status(201).json(result.rows[0]);
-        res.json({ message: "Appointment booked successfully" });
-    } 
-    catch (error) {
+    } catch (error) {
         console.error("Internal Server error", error.message);
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Cancel an appointment
 router.delete('/cancel/:id', async (req, res) => {

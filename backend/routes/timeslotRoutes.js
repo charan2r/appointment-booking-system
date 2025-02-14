@@ -1,10 +1,11 @@
 const express = require('express');
 const pool = require('../config/db');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 // GET all timeslots
-router.get('/slots', async (req, res) => {
+router.get('/slots', authMiddleware, async (req, res) => {
     try {
         const allTimeslots = await pool.query('SELECT * FROM time_slots');
         res.json(allTimeslots.rows);

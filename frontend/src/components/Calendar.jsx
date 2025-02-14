@@ -15,7 +15,7 @@ dayjs.extend(timezone);
 
 // Modal component for booking appointment
 const AppointmentModal = ({ isOpen, closeModal, selectedSlot, onSubmit }) => {
-  const [userId, setUserId] = useState('');
+  const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [timeSlot, setTimeSlot] = useState('');
 
@@ -36,7 +36,7 @@ const AppointmentModal = ({ isOpen, closeModal, selectedSlot, onSubmit }) => {
     }
     try {
       const response = await axios.post("http://localhost:5000/appointment/book", {
-        user_id: userId,
+        name: name,
         date,
         time_slot: timeSlot,
       });
@@ -58,13 +58,13 @@ const AppointmentModal = ({ isOpen, closeModal, selectedSlot, onSubmit }) => {
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">Book an Appointment</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-600" htmlFor="userId">User ID</label>
+            <label className="block text-gray-600" htmlFor="userId">Your Name</label>
             <input
               type="text"
               id="userId"
               className="w-full p-2 border border-gray-300 rounded-md"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>

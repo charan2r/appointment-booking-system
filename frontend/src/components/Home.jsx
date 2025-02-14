@@ -6,7 +6,7 @@ const Home = () => {
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 to-blue-600 p-6">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-800 text-center mt-20 mb-10">
             📅 Available Slots

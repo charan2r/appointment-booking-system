@@ -18,7 +18,7 @@ const Login = () => {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("authToken", `Bearer ${data.token}`);
         navigate("/home");
       } else {
         alert("Login failed: " + data.message);

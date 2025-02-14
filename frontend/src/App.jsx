@@ -3,6 +3,7 @@ import Home from "./components/Home";
 import AppointmentList from "./components/AppointmentList";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import Auth from "./components/Auth";
 
 function App() {
   return (
@@ -10,8 +11,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/appointments" element={<AppointmentList />} />
+        <Route element={<Auth />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/appointments" element={<AppointmentList />} />
+        </Route>
       </Routes>
     </Router>
   );
