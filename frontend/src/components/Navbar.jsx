@@ -12,23 +12,18 @@ const Navbar = () => {
         {/* Navbar Links */}
         <div className="space-x-6 hidden md:flex">
           <Link
-            to="/"
+            to="/home"
             className="text-white hover:text-gray-300 transition-colors text-lg"
           >
             Home
           </Link>
           <Link
-            to="/about"
+            to="/appointments"
             className="text-white hover:text-gray-300 transition-colors text-lg"
           >
-            About
+            Appointments
           </Link>
-          <Link
-            to="/contact"
-            className="text-white hover:text-gray-300 transition-colors text-lg"
-          >
-            Contact
-          </Link>
+          
         </div>
 
         {/* Mobile Menu Button */}

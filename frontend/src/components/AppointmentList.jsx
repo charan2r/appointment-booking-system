@@ -37,7 +37,11 @@ const AppointmentList = () => {
 
     try {
       await axios.delete(`http://localhost:5000/appointment/cancel/${selectedAppointment.id}`);
-      setAppointments(appointments.map(appt => appt.id === selectedAppointment.id ? { ...appt, status: "cancelled" } : appt));
+      setAppointments(
+        appointments.map((appt) =>
+          appt.id === selectedAppointment.id ? { ...appt, status: "cancelled" } : appt
+        )
+      );
       toast.success("Appointment canceled successfully!");
     } catch (error) {
       toast.error("Error canceling appointment.");
@@ -47,53 +51,62 @@ const AppointmentList = () => {
     }
   };
 
-  if (loading) return <p className="text-center text-lg">Loading appointments...</p>;
+  if (loading) return <p className="text-center text-lg text-gray-600">Loading appointments...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4 text-center">Appointment List</h2>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>User ID</TableCell>
-            <TableCell>Date</TableCell>
-            <TableCell>Time Slot</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {appointments.map((appt) => (
-            <TableRow key={appt.id} className="border-b">
-              <TableCell>{appt.id}</TableCell>
-              <TableCell>{appt.user_id}</TableCell>
-              <TableCell>{appt.date}</TableCell>
-              <TableCell>{appt.time_slot}</TableCell>
-              <TableCell className={appt.status === "cancelled" ? "text-red-500" : "text-green-500"}>{appt.status}</TableCell>
-              <TableCell>
-                {appt.status !== "cancelled" && (
-                  <Button onClick={() => handleCancelClick(appt)} className="bg-red-500 hover:bg-red-600 text-white">Cancel</Button>
-                )}
-              </TableCell>
+      <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Appointment List</h2>
+      <div className="overflow-x-auto">
+        <Table className="w-full border border-gray-300">
+          <TableHead>
+            <TableRow className="bg-blue-500 text-white">
+              <TableCell className="font-semibold">Date</TableCell>
+              <TableCell className="font-semibold">Time Slot</TableCell>
+              <TableCell className="font-semibold">Status</TableCell>
+              <TableCell className="font-semibold text-center">Actions</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {appointments.map((appt) => (
+              <TableRow key={appt.id} className="border-b hover:bg-gray-100">
+                <TableCell className="py-2 px-4">{appt.date}</TableCell>
+                <TableCell className="py-2 px-4">{appt.time_slot}</TableCell>
+                <TableCell
+                  className={`py-2 px-4 font-semibold ${
+                    appt.status === "cancelled" ? "text-red-500" : "text-green-500"
+                  }`}
+                >
+                  {appt.status}
+                </TableCell>
+                <TableCell className="py-2 px-4 text-center">
+                  {appt.status !== "cancelled" && (
+                    <Button
+                      onClick={() => handleCancelClick(appt)}
+                      className="bg-red-500 hover:bg-red-600 text-white py-1 px-4 rounded-md shadow-md"
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Cancel Appointment</DialogTitle>
+        <DialogTitle className="text-gray-800">Cancel Appointment</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText className="text-gray-600">
             Are you sure you want to cancel this appointment?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="primary">No</Button>
-          <Button onClick={confirmCancel} color="secondary">Yes</Button>
+          <Button onClick={() => setOpenDialog(false)} className="text-blue-600 hover:underline">No</Button>
+          <Button onClick={confirmCancel} className="bg-red-500 hover:bg-red-600 text-white py-1 px-4 rounded-md shadow-md">Yes</Button>
         </DialogActions>
       </Dialog>
     </div>
