@@ -10,7 +10,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/user/login", {
+      const response = await fetch("http://localhost:5000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -18,7 +18,7 @@ const Login = () => {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem("authToken", `Bearer ${data.token}`);
+        localStorage.setItem("authToken", data.token);
         navigate("/home");
       } else {
         alert("Login failed: " + data.message);
@@ -32,10 +32,14 @@ const Login = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-xl p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Login
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-600 font-medium mb-1">Email</label>
+            <label className="block text-gray-600 font-medium mb-1">
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -45,7 +49,9 @@ const Login = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-600 font-medium mb-1">Password</label>
+            <label className="block text-gray-600 font-medium mb-1">
+              Password
+            </label>
             <input
               type="password"
               value={password}

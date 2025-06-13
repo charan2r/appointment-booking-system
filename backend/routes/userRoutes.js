@@ -27,6 +27,7 @@ router.post("/register", async (req, res) => {
       "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
       [name, email, hashedPassword]
     );
+    res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Server Error");
@@ -59,6 +60,7 @@ router.post("/login", async (req, res) => {
     res.json({ token });
   } catch (error) {
     console.error(error.message);
+    res.status(500).send("Server Error");
   }
 });
 

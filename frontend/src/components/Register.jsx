@@ -10,7 +10,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/user/register", {
+      const response = await fetch("http://localhost:5000/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -31,10 +31,14 @@ const Register = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-xl p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Register</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Register
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-600 font-medium mb-1">Username</label>
+            <label className="block text-gray-600 font-medium mb-1">
+              Username
+            </label>
             <input
               type="text"
               value={name}
@@ -44,7 +48,9 @@ const Register = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-600 font-medium mb-1">Email</label>
+            <label className="block text-gray-600 font-medium mb-1">
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -54,7 +60,9 @@ const Register = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-600 font-medium mb-1">Password</label>
+            <label className="block text-gray-600 font-medium mb-1">
+              Password
+            </label>
             <input
               type="password"
               value={password}

@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const generateSlots = require("./utils/scheduler");
 require("dotenv").config();
 
 const app = express();
@@ -12,9 +13,11 @@ const userRouter = require("./routes/userRoutes");
 const appointmentRouter = require("./routes/appointmentsRoutes");
 const timeslotRouter = require("./routes/timeslotRoutes");
 
-app.use("/user", userRouter);
+app.use("/auth", userRouter);
 app.use("/appointment", appointmentRouter);
 app.use("/timeslot", timeslotRouter);
+
+generateSlots();
 
 const pool = require("./config/db");
 pool

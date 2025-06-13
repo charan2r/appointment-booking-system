@@ -16,12 +16,17 @@ router.get("/view", async (req, res) => {
 
 // Book an appointment
 router.post("/book", async (req, res) => {
-  const { name, date, time_slot } = req.body;
+  const { name, email, date, time_slot } = req.body;
+
+  // Input validation
+  if (!name || !email || !date || !time_slot) {
+    return res.status(400).json({ error: "All fields are required!" });
+  }
 
   try {
-    // Fetch user_id based on name
-    const user = await pool.query("SELECT id FROM users WHERE name = $1", [
-      name,
+    // Fetch user_id based on email
+    const user = await pool.query("SELECT id FROM users WHERE email = $1", [
+      email,
     ]);
 
     if (user.rows.length === 0) {

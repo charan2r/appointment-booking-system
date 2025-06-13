@@ -83,24 +83,28 @@ const Calendar = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/timeslot/slots")
-      .then((res) => setSlots(res.data))
+      .get("http://localhost:5000/timeslot/slots", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("Fetched slots:", res.data);
+        setSlots(res.data);
+      })
       .catch((err) => console.error("Error fetching slots:", err));
   }, []);
 
   const events = useMemo(() => {
     return slots.map((slot) => {
-      const [hour, minute] = slot.time_slot.split(":");
-      // Use moment to parse date and set time
-      const start = moment(slot.date)
-        .set({ hour: +hour, minute: +minute, second: 0, millisecond: 0 })
-        .toDate();
-      const end = moment(start).add(30, "minutes").toDate();
+      const dateOnly = moment(slot.date).format("YYYY-MM-DD");
+      const dateTimeStr = `${dateOnly}T${slot.time_slot}`;
+      const start = new Date(dateTimeStr);
+      const end = moment(start).add(60, "minutes").toDate();
       return {
         id: slot.id,
-        title: slot.available
-          ? `Available - ${slot.time_slot}`
-          : `Booked - ${slot.time_slot}`,
+        title: slot.available ? "Available" : `Booked - ${slot.time_slot}`,
         start,
         end,
         allDay: false,
@@ -126,7 +130,7 @@ const Calendar = () => {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto bg-white shadow rounded-lg">
+    <div className="p-6 w-full max-w-6xl mx-auto bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-4 text-center">
         Book an Appointment
       </h2>
@@ -137,6 +141,7 @@ const Calendar = () => {
         views={["month", "week", "day"]}
         startAccessor="start"
         endAccessor="end"
+        toolbar={true}
         style={{ height: 600 }}
         onSelectEvent={handleSelectEvent}
         eventPropGetter={(event) => ({
