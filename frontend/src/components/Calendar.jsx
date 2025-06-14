@@ -1,86 +1,133 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect, useMemo } from "react";
-import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
-import { format } from "date-fns";
-import { ToastContainer, toast } from "react-toastify";
-import moment from "moment";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { LocalizationProvider, DateCalendar } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import { motion } from "framer-motion";
 
-const localizer = momentLocalizer(moment);
+// Timezone and UTC plugins for Day.js
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
+// Modal component for booking appointment
 const AppointmentModal = ({ isOpen, closeModal, selectedSlot, onSubmit }) => {
   const [name, setName] = useState("");
+  const [date, setDate] = useState("");
+  const [timeSlot, setTimeSlot] = useState("");
 
+  useEffect(() => {
+    if (selectedSlot) {
+      setDate(dayjs(selectedSlot.date).format("YYYY-MM-DD")); // Ensure correct date format
+      setTimeSlot(selectedSlot.time_slot);
+    }
+  }, [selectedSlot]);
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedSlot) {
-      toast.error("No slot selected");
+    if (!date || !timeSlot) {
+      console.error("Date or time slot is not selected");
+      toast.error("Please select a date and time slot");
       return;
     }
     try {
       const response = await axios.post(
         "http://localhost:5000/appointment/book",
         {
-          name,
-          date: format(new Date(selectedSlot.date), "yyyy-MM-dd"),
-          time_slot: selectedSlot.time_slot,
+          name: name,
+          date,
+          time_slot: timeSlot,
         }
       );
+      console.log("Appointment booked successfully:", response.data);
       toast.success("Appointment booked successfully");
       onSubmit();
       closeModal();
-      console.log("Booking response:", response.data);
     } catch (error) {
+      console.error(
+        "Error booking appointment:",
+        error.response?.data || error.message
+      );
       toast.error(error.response?.data?.error || "Error booking appointment");
     }
   };
 
-  if (!isOpen || !selectedSlot) return null;
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">Book Appointment</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+          Book an Appointment
+        </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block mb-1">Your Name</label>
+            <label className="block text-gray-600" htmlFor="name">
+              Name
+            </label>
             <input
               type="text"
-              className="w-full border p-2 rounded"
+              id="name"
+              className="w-full p-2 border border-gray-300 rounded-md"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
           <div className="mb-4">
-            <p>Date: {format(new Date(selectedSlot.date), "yyyy-MM-dd")}</p>
-            <p>Time Slot: {selectedSlot.time_slot}</p>
+            <label className="block text-gray-600" htmlFor="date">
+              Date
+            </label>
+            <input
+              type="text"
+              id="date"
+              className="w-full p-2 border border-gray-300 rounded-md"
+              value={date}
+              disabled
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-600" htmlFor="timeSlot">
+              Time Slot
+            </label>
+            <input
+              type="text"
+              id="timeSlot"
+              className="w-full p-2 border border-gray-300 rounded-md"
+              value={timeSlot}
+              disabled
+            />
           </div>
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded w-full hover:bg-blue-600"
+            className="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600"
           >
-            Confirm Booking
+            Book Appointment
           </button>
         </form>
         <button
+          className="mt-4 text-blue-500 hover:text-blue-600"
           onClick={closeModal}
-          className="mt-3 text-blue-500 hover:underline"
         >
-          Cancel
+          Close
         </button>
       </div>
     </div>
   );
 };
 
-const Calendar = () => {
-  const [slots, setSlots] = useState([]);
+const Calendars = ({ onDateSelect }) => {
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(dayjs().startOf("day"));
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Fetch available time slots from the API
   useEffect(() => {
     axios
       .get("http://localhost:5000/timeslot/slots", {
@@ -89,80 +136,106 @@ const Calendar = () => {
           "Content-Type": "application/json",
         },
       })
-      .then((res) => {
-        console.log("Fetched slots:", res.data);
-        setSlots(res.data);
+      .then((response) => {
+        console.log("Fetched slots:", response.data); // Debugging
+        setAvailableSlots(response.data);
       })
-      .catch((err) => console.error("Error fetching slots:", err));
+      .catch((error) => console.error("Error fetching slots:", error));
   }, []);
 
-  const events = useMemo(() => {
-    return slots.map((slot) => {
-      const dateOnly = moment(slot.date).format("YYYY-MM-DD");
-      const dateTimeStr = `${dateOnly}T${slot.time_slot}`;
-      const start = new Date(dateTimeStr);
-      const end = moment(start).add(60, "minutes").toDate();
-      return {
-        id: slot.id,
-        title: slot.available ? "Available" : `Booked - ${slot.time_slot}`,
-        start,
-        end,
-        allDay: false,
-        slot,
-        isAvailable: slot.available,
-      };
-    });
-  }, [slots]);
+  // Convert API date format to "YYYY-MM-DD"
+  const availableDates = availableSlots.map((slot) =>
+    dayjs(slot.date).format("YYYY-MM-DD")
+  );
 
-  const handleSelectEvent = (event) => {
-    if (!event.isAvailable) {
-      toast.warn("This time slot is already booked");
-      return;
-    }
-    setSelectedSlot(event.slot);
+  const openBookingModal = (slot) => {
+    setSelectedSlot({
+      ...slot,
+      date: dayjs(slot.date).format("YYYY-MM-DD"),
+    });
     setIsModalOpen(true);
   };
 
-  const handleBookingComplete = () => {
-    axios
-      .get("http://localhost:5000/timeslot/slots")
-      .then((res) => setSlots(res.data));
+  const closeBookingModal = () => {
+    setSelectedSlot(null);
+    setIsModalOpen(false);
   };
 
   return (
-    <div className="p-6 w-full max-w-6xl mx-auto bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Book an Appointment
+    <>
+      <h2 className="text-2xl font-semibold text-gray-700 mb-4 text-center">
+        Select a Date
       </h2>
-      <BigCalendar
-        localizer={localizer}
-        events={events}
-        defaultView="week"
-        views={["month", "week", "day"]}
-        startAccessor="start"
-        endAccessor="end"
-        toolbar={true}
-        style={{ height: 600 }}
-        onSelectEvent={handleSelectEvent}
-        eventPropGetter={(event) => ({
-          style: {
-            backgroundColor: event.isAvailable ? "#3B82F6" : "#9CA3AF",
-            color: "white",
-            borderRadius: "5px",
-            border: "none",
-            padding: "2px 6px",
-          },
-        })}
-      />
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <div className="bg-white shadow-2xl border border-gray-200 rounded-xl p-6 max-w-md mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{
+              scale: 1.03,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <DateCalendar
+              value={selectedDate}
+              onChange={(newDate) => {
+                if (newDate) {
+                  const localDate = newDate.startOf("day").utcOffset(0, true); // Prevent timezone shift
+                  setSelectedDate(localDate);
+                  onDateSelect(localDate.format("YYYY-MM-DD"));
+                }
+              }}
+              shouldDisableDate={(date) =>
+                !availableDates.includes(date.format("YYYY-MM-DD"))
+              }
+            />
+          </motion.div>
+        </div>
+      </LocalizationProvider>
+
+      {/* Available Time Slots Section */}
+      <div className="mt-6 ">
+        <h3 className="text-xl font-medium text-gray-800 mb-3 text-center">
+          Available Time Slots
+        </h3>
+
+        <div className="flex flex-col gap-2 max-w-md mx-auto">
+          {availableSlots
+            .filter(
+              (slot) =>
+                dayjs(slot.date).format("YYYY-MM-DD") ===
+                selectedDate.format("YYYY-MM-DD")
+            )
+            .map((slot) => (
+              <button
+                key={slot.id}
+                className={`py-2 px-4 text-lg font-semibold rounded-lg transition ${
+                  slot.available
+                    ? "bg-blue-500 hover:bg-blue-600 text-white shadow-md"
+                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                }`}
+                disabled={!slot.available}
+                onClick={() => openBookingModal(slot)}
+              >
+                {slot.time_slot} {slot.available ? "(Available)" : "(Booked)"}
+              </button>
+            ))}
+        </div>
+      </div>
+
+      {/* Appointment Booking Modal */}
       <AppointmentModal
         isOpen={isModalOpen}
+        closeModal={closeBookingModal}
         selectedSlot={selectedSlot}
-        closeModal={() => setIsModalOpen(false)}
-        onSubmit={handleBookingComplete}
+        onSubmit={() => closeBookingModal()}
       />
+
       <ToastContainer />
-    </div>
+    </>
   );
 };
 
-export default Calendar;
+export default Calendars;

@@ -21,6 +21,8 @@
     "daisyui": "^4.12.23",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "framer-motion": "^12.18.1",
+    "lucide-react": "^0.515.0",
     "react": "^19.0.0",
     "react-big-calendar": "^1.19.2",
     "react-dom": "^19.0.0",
